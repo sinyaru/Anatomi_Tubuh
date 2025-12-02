@@ -20,6 +20,8 @@ use App\Http\Controllers\OrganPenggunaController;
 use App\Http\Controllers\QuizPenggunaController;
 use App\Http\Controllers\HasilQuizPenggunaController;
 use App\Http\Controllers\KategoriController;
+use Illuminate\Support\Facades\Artisan;
+
 
 use Illuminate\Support\Facades\Auth;
 
@@ -239,3 +241,9 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 });
 
 require __DIR__ . '/auth.php';
+
+Route::get('/run-migrate-seed', function () {
+    Artisan::call('migrate', ['--force' => true]); // buat tabel
+    Artisan::call('db:seed', ['--force' => true]); // jalankan seeder
+    return 'Migration and seeding done!';
+});
