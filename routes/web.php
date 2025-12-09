@@ -21,7 +21,7 @@ use App\Http\Controllers\QuizPenggunaController;
 use App\Http\Controllers\HasilQuizPenggunaController;
 use App\Http\Controllers\KategoriController;
 use Illuminate\Support\Facades\Artisan;
-
+use Illuminate\Support\Facades\Storage;
 
 use Illuminate\Support\Facades\Auth;
 
@@ -31,9 +31,36 @@ use Illuminate\Support\Facades\Auth;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+    Route::get('/', function () {
+        return view('welcome');
+    })->name('home');
+
+    Route::get('/migrate-old-images', function () {
+
+        $folder = public_path('uploads');
+        $files = scandir($folder);
+
+        $uploaded = [];
+
+        foreach ($files as $file) {
+            if ($file === '.' || $file === '..') continue;
+
+            $filePath = $folder . '/' . $file;
+
+            // Upload ke Supabase
+            $result = Storage::disk('supabase')->put($file, file_get_contents($filePath));
+
+            if ($result) {
+                $uploaded[] = $file;
+            }
+        }
+
+        return [
+            "status" => true,
+            "uploaded" => $uploaded,
+            "total_uploaded" => count($uploaded)
+        ];
+    });
 
 Route::get('/uploads/{filename}', function ($filename) {
     $path = public_path("uploads/$filename");
