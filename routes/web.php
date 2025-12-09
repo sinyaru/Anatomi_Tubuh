@@ -242,6 +242,17 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
 require __DIR__ . '/auth.php';
 
+Route::get('/uploads/{filename}', function ($filename) {
+    $path = public_path("uploads/$filename");
+
+    if (!file_exists($path)) {
+        return abort(404);
+    }
+
+    return response()->file($path);
+});
+
+
 Route::get('/run-migrate-seed', function () {
     Artisan::call('migrate', ['--force' => true]); // buat tabel
     Artisan::call('db:seed', ['--force' => true]); // jalankan seeder

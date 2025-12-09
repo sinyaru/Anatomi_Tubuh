@@ -8,9 +8,7 @@ use Illuminate\Http\Request;
 
 class QuizController extends Controller
 {
-    // ================================
-    // GET: Semua Quiz
-    // ================================
+    // GET semua quiz
     public function index()
     {
         return response()->json([
@@ -19,29 +17,19 @@ class QuizController extends Controller
         ]);
     }
 
-    // ================================
-    // GET: Detail Quiz
-    // ================================
+    // GET detail
     public function show($id)
     {
         $quiz = Quiz::find($id);
 
         if (!$quiz) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Quiz tidak ditemukan'
-            ], 404);
+            return response()->json(['status' => false, 'message' => 'Quiz tidak ditemukan'], 404);
         }
 
-        return response()->json([
-            'status' => true,
-            'data' => $quiz
-        ]);
+        return response()->json(['status' => true, 'data' => $quiz]);
     }
 
-    // ================================
-    // POST: Tambah Quiz
-    // ================================
+    // POST tambah quiz
     public function store(Request $request)
     {
         $request->validate([
@@ -51,7 +39,6 @@ class QuizController extends Controller
             'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        // Jika pilihan ganda, wajib opsi
         if ($request->tipe === 'pilihan') {
             $request->validate([
                 'opsi_a' => 'required',
@@ -61,8 +48,9 @@ class QuizController extends Controller
             ]);
         }
 
-        // Upload foto jika ada
         $namaFoto = null;
+
+        // Upload foto
         if ($request->hasFile('foto')) {
             $file = $request->file('foto');
             $namaFoto = time() . '_' . $file->getClientOriginalName();
@@ -87,18 +75,13 @@ class QuizController extends Controller
         ]);
     }
 
-    // ================================
-    // POST/PUT: Update Quiz
-    // ================================
+    // UPDATE quiz
     public function update(Request $request, $id)
     {
         $quiz = Quiz::find($id);
 
         if (!$quiz) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Quiz tidak ditemukan'
-            ], 404);
+            return response()->json(['status' => false, 'message' => 'Quiz tidak ditemukan'], 404);
         }
 
         $request->validate([
@@ -108,7 +91,6 @@ class QuizController extends Controller
             'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        // Jika pilihan ganda, wajib opsi
         if ($request->tipe === 'pilihan') {
             $request->validate([
                 'opsi_a' => 'required',
@@ -118,7 +100,7 @@ class QuizController extends Controller
             ]);
         }
 
-        // Upload foto baru jika ada
+        // Jika upload foto baru
         if ($request->hasFile('foto')) {
             $file = $request->file('foto');
             $namaFoto = time() . '_' . $file->getClientOriginalName();
@@ -127,6 +109,7 @@ class QuizController extends Controller
             $quiz->foto = $namaFoto;
         }
 
+        // Update data lain
         $quiz->update([
             'soal' => $request->soal,
             'jawaban_benar' => $request->jawaban_benar,
@@ -144,18 +127,13 @@ class QuizController extends Controller
         ]);
     }
 
-    // ================================
-    // DELETE: Hapus Quiz
-    // ================================
+    // DELETE quiz
     public function destroy($id)
     {
         $quiz = Quiz::find($id);
 
         if (!$quiz) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Quiz tidak ditemukan'
-            ], 404);
+            return response()->json(['status' => false, 'message' => 'Quiz tidak ditemukan'], 404);
         }
 
         $quiz->delete();
