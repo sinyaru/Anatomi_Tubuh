@@ -3,47 +3,94 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Kategori;
 use Illuminate\Http\Request;
 
 class KategoriController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    // GET semua kategori
     public function index()
     {
-        //
+        return response()->json([
+            'status' => true,
+            'data' => Kategori::all()
+        ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    // POST tambah kategori
     public function store(Request $request)
     {
-        //
+        $request->validate(['nama' => 'required']);
+
+        $kategori = Kategori::create([
+            'nama' => $request->nama
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Kategori berhasil ditambahkan',
+            'data' => $kategori
+        ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    // GET detail kategori
+    public function show($id)
     {
-        //
+        $kategori = Kategori::find($id);
+
+        if (!$kategori) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Kategori tidak ditemukan'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'data' => $kategori
+        ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    // PUT update kategori
+    public function update(Request $request, $id)
     {
-        //
+        $kategori = Kategori::find($id);
+
+        if (!$kategori) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Kategori tidak ditemukan'
+            ], 404);
+        }
+
+        $request->validate(['nama' => 'required']);
+
+        $kategori->update(['nama' => $request->nama]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Kategori berhasil diperbarui',
+            'data' => $kategori
+        ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    // DELETE kategori
+    public function destroy($id)
     {
-        //
+        $kategori = Kategori::find($id);
+
+        if (!$kategori) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Kategori tidak ditemukan'
+            ], 404);
+        }
+
+        $kategori->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Kategori berhasil dihapus'
+        ]);
     }
 }

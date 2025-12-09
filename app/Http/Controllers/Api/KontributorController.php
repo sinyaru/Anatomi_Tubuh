@@ -3,47 +3,22 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\Organ;
+use App\Models\Quiz;
+use App\Models\HasilQuiz;
 
 class KontributorController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return response()->json([
+            'status' => true,
+            'totalOrgan' => Organ::count(),
+            'totalQuiz' => Quiz::count(),
+            'rataNilai' => round(HasilQuiz::avg('skor') ?? 0, 1),
+            'activity' => HasilQuiz::selectRaw('DAYNAME(created_at) as hari, COUNT(*) as jumlah')
+                ->groupBy('hari')
+                ->pluck('jumlah', 'hari')
+        ]);
     }
 }
