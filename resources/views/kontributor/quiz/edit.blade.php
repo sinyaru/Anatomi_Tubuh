@@ -34,7 +34,7 @@
 
         <div class="title-box">Edit Quiz</div>
 
-        <form action="{{ route('quiz.update', $quiz->id) }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('kontributor.quiz.update', $quiz->id) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
 
@@ -117,7 +117,7 @@
             @endif
 
             <button type="submit" class="btn-pink">Update</button>
-            <a href="{{ route('quiz.index') }}" class="btn btn-secondary">Batal</a>
+            <a href="{{ route('kontributor.quiz.index') }}" class="btn btn-secondary">Batal</a>
 
         </form>
     </div>
