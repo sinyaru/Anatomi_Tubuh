@@ -58,6 +58,7 @@ return [
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'throw' => false,
             'report' => false,
+            
         ],
 
         'supabase' => [
@@ -68,6 +69,9 @@ return [
             'bucket' => env('SUPABASE_STORAGE_BUCKET'),
             'endpoint' => env('SUPABASE_STORAGE_ENDPOINT'),
             'use_path_style_endpoint' => true, // supabase S3-compatible often requires path style
+            'visibility' => 'public',
+            'throw' => false,
+
     ],
 
     ],
