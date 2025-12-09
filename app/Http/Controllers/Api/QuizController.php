@@ -10,6 +10,9 @@ use Illuminate\Support\Str;
 
 class QuizController extends Controller
 {
+    // ============================================================
+    // GET ALL QUIZ
+    // ============================================================
     public function index()
     {
         return response()->json([
@@ -18,48 +21,63 @@ class QuizController extends Controller
         ]);
     }
 
+    // ============================================================
+    // GET DETAIL
+    // ============================================================
     public function show($id)
     {
         $quiz = Quiz::find($id);
 
         if (!$quiz) {
-            return response()->json(['status' => false, 'message' => 'Quiz tidak ditemukan'], 404);
+            return response()->json([
+                'status' => false,
+                'message' => 'Quiz tidak ditemukan'
+            ], 404);
         }
 
         return response()->json(['status' => true, 'data' => $quiz]);
     }
 
+    // ============================================================
+    // STORE (UPLOAD TO SUPABASE)
+    // ============================================================
     public function store(Request $request)
     {
         $request->validate([
             'soal' => 'required',
             'tipe' => 'required|in:pilihan,true_false',
             'jawaban_benar' => 'required',
-            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:4096',
         ]);
 
         $fileName = null;
 
-        // Upload ke Supabase Storage
+        // Upload foto ke Supabase
         if ($request->hasFile('foto')) {
+
             $file = $request->file('foto');
 
-            $fileName = time() . '_' .
+            $fileName =
+                time() . '_' .
                 Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) .
                 '.' . $file->getClientOriginalExtension();
 
-            Storage::disk('supabase')->putFileAs('', $file, $fileName, [
-                'Visibility' => 'public'
-            ]);
+            // Wajib sertakan folder 'quiz-images'
+            Storage::disk('supabase')->putFileAs(
+                'quiz-images',
+                $file,
+                $fileName,
+                ['visibility' => 'public']
+            );
         }
 
         $quiz = Quiz::create([
             'soal' => $request->soal,
             'jawaban_benar' => $request->jawaban_benar,
-            'opsi_a' => $request->tipe == 'pilihan' ? $request->opsi_a : null,
-            'opsi_b' => $request->tipe == 'pilihan' ? $request->opsi_b : null,
-            'opsi_c' => $request->tipe == 'pilihan' ? $request->opsi_c : null,
-            'opsi_d' => $request->tipe == 'pilihan' ? $request->opsi_d : null,
+            'opsi_a' => $request->tipe === 'pilihan' ? $request->opsi_a : null,
+            'opsi_b' => $request->tipe === 'pilihan' ? $request->opsi_b : null,
+            'opsi_c' => $request->tipe === 'pilihan' ? $request->opsi_c : null,
+            'opsi_d' => $request->tipe === 'pilihan' ? $request->opsi_d : null,
             'tipe' => $request->tipe,
             'foto' => $fileName,
         ]);
@@ -67,6 +85,9 @@ class QuizController extends Controller
         return response()->json(['status' => true, 'data' => $quiz]);
     }
 
+    // ============================================================
+    // UPDATE
+    // ============================================================
     public function update(Request $request, $id)
     {
         $quiz = Quiz::findOrFail($id);
@@ -75,26 +96,31 @@ class QuizController extends Controller
             'soal' => 'required',
             'jawaban_benar' => 'required',
             'tipe' => 'required|in:pilihan,true_false',
-            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:4096',
         ]);
 
-        // Upload gambar baru ke Supabase
+        // Jika upload foto baru
         if ($request->hasFile('foto')) {
 
-            // Hapus foto lama
+            // Hapus file lama
             if ($quiz->foto) {
-                Storage::disk('supabase')->delete($quiz->foto);
+                Storage::disk('supabase')->delete("quiz-images/{$quiz->foto}");
             }
 
             $file = $request->file('foto');
 
-            $fileName = time() . '_' .
+            $fileName =
+                time() . '_' .
                 Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) .
                 '.' . $file->getClientOriginalExtension();
 
-            Storage::disk('supabase')->putFileAs('', $file, $fileName, [
-                'Visibility' => 'public'
-            ]);
+            // Upload baru
+            Storage::disk('supabase')->putFileAs(
+                'quiz-images',
+                $file,
+                $fileName,
+                ['visibility' => 'public']
+            );
 
             $quiz->foto = $fileName;
         }
@@ -102,10 +128,10 @@ class QuizController extends Controller
         $quiz->update([
             'soal' => $request->soal,
             'jawaban_benar' => $request->jawaban_benar,
-            'opsi_a' => $request->tipe == 'pilihan' ? $request->opsi_a : null,
-            'opsi_b' => $request->tipe == 'pilihan' ? $request->opsi_b : null,
-            'opsi_c' => $request->tipe == 'pilihan' ? $request->opsi_c : null,
-            'opsi_d' => $request->tipe == 'pilihan' ? $request->opsi_d : null,
+            'opsi_a' => $request->tipe === 'pilihan' ? $request->opsi_a : null,
+            'opsi_b' => $request->tipe === 'pilihan' ? $request->opsi_b : null,
+            'opsi_c' => $request->tipe === 'pilihan' ? $request->opsi_c : null,
+            'opsi_d' => $request->tipe === 'pilihan' ? $request->opsi_d : null,
             'tipe' => $request->tipe,
             'foto' => $quiz->foto,
         ]);
@@ -113,16 +139,23 @@ class QuizController extends Controller
         return response()->json(['status' => true, 'data' => $quiz]);
     }
 
+    // ============================================================
+    // DELETE
+    // ============================================================
     public function destroy($id)
     {
         $quiz = Quiz::find($id);
 
         if (!$quiz) {
-            return response()->json(['status' => false, 'message' => 'Quiz tidak ditemukan'], 404);
+            return response()->json([
+                'status' => false,
+                'message' => 'Quiz tidak ditemukan'
+            ], 404);
         }
 
+        // Hapus foto dari Supabase
         if ($quiz->foto) {
-            Storage::disk('supabase')->delete($quiz->foto);
+            Storage::disk('supabase')->delete("quiz-images/{$quiz->foto}");
         }
 
         $quiz->delete();
