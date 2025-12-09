@@ -39,22 +39,16 @@ class QuizController extends Controller
             'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        if ($request->tipe === 'pilihan') {
-            $request->validate([
-                'opsi_a' => 'required',
-                'opsi_b' => 'required',
-                'opsi_c' => 'required',
-                'opsi_d' => 'required',
-            ]);
-        }
-
-        $namaFoto = null;
-
-        // Upload foto
+        $fileName = null;
         if ($request->hasFile('foto')) {
             $file = $request->file('foto');
-            $namaFoto = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('uploads'), $namaFoto);
+            // buat nama unik
+            $fileName = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $file->getClientOriginalExtension();
+
+            // simpan ke supabase bucket
+            $path = Storage::disk('supabase')->putFileAs('/', $file, $fileName, ['Visibility' => 'public']);
+            // putFileAs dengan '/' akan menaruh di root bucket; path mungkin sama nama file
+            // $path berisi nama file (tergantung implementasi) — tetapi kita simpan $fileName di DB
         }
 
         $quiz = Quiz::create([
@@ -65,24 +59,15 @@ class QuizController extends Controller
             'opsi_c' => $request->tipe === 'pilihan' ? $request->opsi_c : null,
             'opsi_d' => $request->tipe === 'pilihan' ? $request->opsi_d : null,
             'tipe' => $request->tipe,
-            'foto' => $namaFoto,
+            'foto' => $fileName,
         ]);
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Quiz berhasil ditambahkan',
-            'data' => $quiz
-        ]);
+        return response()->json(['status' => true, 'data' => $quiz]);
     }
 
-    // UPDATE quiz
     public function update(Request $request, $id)
     {
-        $quiz = Quiz::find($id);
-
-        if (!$quiz) {
-            return response()->json(['status' => false, 'message' => 'Quiz tidak ditemukan'], 404);
-        }
+        $quiz = Quiz::findOrFail($id);
 
         $request->validate([
             'soal' => 'required',
@@ -91,25 +76,20 @@ class QuizController extends Controller
             'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        if ($request->tipe === 'pilihan') {
-            $request->validate([
-                'opsi_a' => 'required',
-                'opsi_b' => 'required',
-                'opsi_c' => 'required',
-                'opsi_d' => 'required',
-            ]);
-        }
-
-        // Jika upload foto baru
         if ($request->hasFile('foto')) {
-            $file = $request->file('foto');
-            $namaFoto = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('uploads'), $namaFoto);
+            // hapus file lama (opsional)
+            if ($quiz->foto) {
+                // hapus di supabase
+                Storage::disk('supabase')->delete($quiz->foto);
+            }
 
-            $quiz->foto = $namaFoto;
+            $file = $request->file('foto');
+            $fileName = time() . '_' . Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) . '.' . $file->getClientOriginalExtension();
+            Storage::disk('supabase')->putFileAs('/', $file, $fileName, ['Visibility' => 'public']);
+
+            $quiz->foto = $fileName;
         }
 
-        // Update data lain
         $quiz->update([
             'soal' => $request->soal,
             'jawaban_benar' => $request->jawaban_benar,
@@ -117,14 +97,11 @@ class QuizController extends Controller
             'opsi_b' => $request->tipe === 'pilihan' ? $request->opsi_b : null,
             'opsi_c' => $request->tipe === 'pilihan' ? $request->opsi_c : null,
             'opsi_d' => $request->tipe === 'pilihan' ? $request->opsi_d : null,
-            'tipe' => $request->tipe
+            'tipe' => $request->tipe,
+            'foto' => $quiz->foto,
         ]);
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Quiz berhasil diperbarui',
-            'data' => $quiz
-        ]);
+        return response()->json(['status' => true, 'data' => $quiz]);
     }
 
     // DELETE quiz
