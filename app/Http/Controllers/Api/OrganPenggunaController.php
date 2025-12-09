@@ -3,47 +3,64 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\Organ;
+use App\Models\Informasi;
+use App\Models\Kategori;
+use Illuminate\Support\Facades\Schema;
 
 class OrganPenggunaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    // ============================================================
+    // 1️⃣ Ambil semua kategori organ
+    // ============================================================
+    public function kategori()
     {
-        //
+        return response()->json([
+            'status' => true,
+            'data'   => Kategori::all()
+        ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    // ============================================================
+    // 2️⃣ Ambil organ berdasarkan kategori
+    // ============================================================
+    public function organByKategori($id)
     {
-        //
+        $kategori = Kategori::find($id);
+
+        if (!$kategori) {
+            return response()->json(['status' => false, 'message' => 'Kategori tidak ditemukan'], 404);
+        }
+
+        $organs = Organ::where('kategori_id', $id)->get();
+
+        return response()->json([
+            'status'   => true,
+            'kategori' => $kategori,
+            'organs'   => $organs
+        ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    // ============================================================
+    // 3️⃣ Detail organ + informasi tambahan
+    // ============================================================
+    public function detail($id)
     {
-        //
-    }
+        $organ = Organ::find($id);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+        if (!$organ) {
+            return response()->json(['status' => false, 'message' => 'Organ tidak ditemukan'], 404);
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $informasi = [];
+        if (Schema::hasTable('informasis')) {
+            $informasi = Informasi::where('organ_id', $id)->get();
+        }
+
+        return response()->json([
+            'status'    => true,
+            'organ'     => $organ,
+            'informasi' => $informasi
+        ]);
     }
 }

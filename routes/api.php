@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\KontributorController;
 use App\Http\Controllers\Api\PenggunaController;
 use App\Http\Controllers\Api\InformasiController;
 use App\Http\Controllers\Api\QuizController;
+use App\Http\Controllers\Api\OrganPenggunaController;
 
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -54,6 +55,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/informasi/{id}', [InformasiController::class, 'update']);
     Route::delete('/informasi/{id}', [InformasiController::class, 'destroy']);
 
+    Route::get('/kategori', [OrganPenggunaController::class, 'kategori']);
+    Route::get('/kategori/{id}/organ', [OrganPenggunaController::class, 'organByKategori']);
+    Route::get('/organ/{id}', [OrganPenggunaController::class, 'detail']);
 });
 
 
