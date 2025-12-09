@@ -45,6 +45,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/quiz/{id}', [QuizController::class, 'show']);
     Route::post('/quiz/{id}', [QuizController::class, 'update']); // jika PUT sulit di Flutter
     Route::delete('/quiz/{id}', [QuizController::class, 'destroy']);
+
+        // INFORMASI API
+    Route::get('/informasi', [InformasiController::class, 'index']);
+    Route::post('/informasi', [InformasiController::class, 'store']);
+    Route::get('/informasi/{id}', [InformasiController::class, 'show']);
+    Route::post('/informasi/{id}', [InformasiController::class, 'update']);
+    Route::delete('/informasi/{id}', [InformasiController::class, 'destroy']);
+
 });
 
 
