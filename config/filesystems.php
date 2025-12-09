@@ -67,12 +67,25 @@ return [
             'secret' => env('SUPABASE_STORAGE_SECRET'),
             'region' => env('SUPABASE_STORAGE_REGION', 'ap-northeast-2'),
             'bucket' => env('SUPABASE_STORAGE_BUCKET'),
-            'endpoint' => env('SUPABASE_STORAGE_ENDPOINT'),
-            'use_path_style_endpoint' => true, // supabase S3-compatible often requires path style
-            'visibility' => 'public',
-            'throw' => false,
 
-    ],
+            // ⚠️ ENDPOINT BENAR (S3-Compatible)
+            'endpoint' => env('SUPABASE_STORAGE_ENDPOINT'),
+
+            // WAJIB UNTUK AWS SDK
+            'version' => 'latest',
+
+            // Path style = TRUE untuk Supabase
+            'use_path_style_endpoint' => true,
+
+            // File public
+            'visibility' => 'public',
+
+            // Public URL untuk Laravel
+            'url' => env('SUPABASE_PROJECT_URL') . '/storage/v1/object/public/' . env('SUPABASE_STORAGE_BUCKET'),
+
+            'throw' => true, // supaya error 500 terlihat
+        ],
+
 
     ],
 

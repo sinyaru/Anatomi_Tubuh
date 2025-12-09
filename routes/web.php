@@ -35,9 +35,16 @@ use Illuminate\Support\Facades\Auth;
         return view('welcome');
     })->name('home');
 
-    Route::get('/migrate-old-images', function () {
+  Route::get('/migrate-old-images', function () {
+
+    try {
 
         $folder = public_path('uploads');
+
+        if (!is_dir($folder)) {
+            return "Folder tidak ditemukan: " . $folder;
+        }
+
         $files = scandir($folder);
 
         $uploaded = [];
@@ -47,20 +54,23 @@ use Illuminate\Support\Facades\Auth;
 
             $filePath = $folder . '/' . $file;
 
-            // Upload ke Supabase
-            $result = Storage::disk('supabase')->put($file, file_get_contents($filePath));
-
-            if ($result) {
-                $uploaded[] = $file;
+            try {
+                $result = Storage::disk('supabase')->put($file, file_get_contents($filePath));
+                $uploaded[] = [$file => $result];
+            } catch (\Exception $e) {
+                $uploaded[] = [$file => "ERROR: " . $e->getMessage()];
             }
         }
 
         return [
             "status" => true,
             "uploaded" => $uploaded,
-            "total_uploaded" => count($uploaded)
         ];
-    });
+
+    } catch (\Exception $e) {
+        return "ERROR UTAMA: " . $e->getMessage();
+    }
+});
 
 Route::get('/uploads/{filename}', function ($filename) {
     $path = public_path("uploads/$filename");
