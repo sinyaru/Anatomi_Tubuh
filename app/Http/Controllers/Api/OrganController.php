@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Organ;
 use Illuminate\Http\Request;
 
-class OrganApiController extends Controller
+class OrganController extends Controller
 {
     // ============================
     // GET: Semua data organ
