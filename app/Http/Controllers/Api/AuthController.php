@@ -31,7 +31,12 @@ class AuthController extends Controller
             'status' => true,
             'message' => 'Login berhasil',
             'token' => $token,
-            'user' => $user
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role, // PENTING
+            ]
         ]);
     }
 
