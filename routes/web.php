@@ -35,6 +35,17 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
+Route::get('/uploads/{filename}', function ($filename) {
+    $path = public_path("uploads/$filename");
+
+    if (!file_exists($path)) {
+        return abort(404);
+    }
+
+    return response()->file($path);
+});
+
+
 // Route untuk halaman Tentang (Public - bisa diakses tanpa login)
 Route::get('/tentang', [InformasiController::class, 'tentang'])
     ->name('tentang');
@@ -241,17 +252,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 });
 
 require __DIR__ . '/auth.php';
-
-Route::get('/uploads/{filename}', function ($filename) {
-    $path = public_path("uploads/$filename");
-
-    if (!file_exists($path)) {
-        return abort(404);
-    }
-
-    return response()->file($path);
-});
-
 
 Route::get('/run-migrate-seed', function () {
     Artisan::call('migrate', ['--force' => true]); // buat tabel
