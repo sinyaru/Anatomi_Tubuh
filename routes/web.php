@@ -35,45 +35,8 @@ use Illuminate\Support\Facades\Auth;
         return view('welcome');
     })->name('home');
 
-  Route::get('/migrate-old-images', function () {
-
-    try {
-
-        $folder = public_path('uploads');
-
-        if (!is_dir($folder)) {
-            return "Folder tidak ditemukan: " . $folder;
-        }
-
-        $files = scandir($folder);
-
-        $uploaded = [];
-
-        foreach ($files as $file) {
-            if ($file === '.' || $file === '..') continue;
-
-            $filePath = $folder . '/' . $file;
-
-            try {
-                $result = Storage::disk('supabase')->put($file, file_get_contents($filePath));
-                $uploaded[] = [$file => $result];
-            } catch (\Exception $e) {
-                $uploaded[] = [$file => "ERROR: " . $e->getMessage()];
-            }
-        }
-
-        return [
-            "status" => true,
-            "uploaded" => $uploaded,
-        ];
-
-    } catch (\Exception $e) {
-        return "ERROR UTAMA: " . $e->getMessage();
-    }
-});
-
 Route::get('/uploads/{filename}', function ($filename) {
-    $path = public_path("uploads/$filename");
+    $path = public_path('uploads/' . $filename);
 
     if (!file_exists($path)) {
         return abort(404);
