@@ -14,10 +14,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'role' => App\Http\Middleware\RoleMiddleware::class,
-            'auth' => \App\Http\Middleware\Authenticate::class,
         ]);
     })
     
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->global(\Illuminate\Http\Middleware\HandleCors::class);
+    })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
