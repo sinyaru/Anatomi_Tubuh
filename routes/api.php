@@ -9,12 +9,15 @@ use App\Http\Controllers\Api\PenggunaController;
 use App\Http\Controllers\Api\InformasiController;
 use App\Http\Controllers\Api\QuizController;
 use App\Http\Controllers\Api\OrganPenggunaController;
+use App\Http\Controllers\Api\DashboardController;
 
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/dashboard/admin', [DashboardController::class, 'admin']);
+
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
